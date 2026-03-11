@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"sghassessment/internal/api"
+	"sghassessment/internal/solutions/codereview1"
 	"sghassessment/internal/solutions/payment"
 	"sghassessment/internal/solutions/workerpool"
 	"sghassessment/pkg/logger"
@@ -14,10 +15,11 @@ import (
 // Container holds all instantiated dependencies for the application.
 // It acts as a central registry for services and handlers.
 type Container struct {
-	Logger            logger.Logger
-	SolutionsHandler  *api.SolutionsHandler
-	PaymentHandler    *api.PaymentHandler
-	WorkerPoolHandler *api.WorkerPoolHandler
+	Logger             logger.Logger
+	SolutionsHandler   *api.SolutionsHandler
+	PaymentHandler     *api.PaymentHandler
+	WorkerPoolHandler  *api.WorkerPoolHandler
+	CodeReview1Handler *api.CodeReview1Handler
 }
 
 // NewContainer initializes and wires all application dependencies.
@@ -46,18 +48,25 @@ func NewContainer(log logger.Logger) *Container {
 	paymentSvc := payment.NewService(txStore, delay)
 	workerPoolSvc := workerpool.NewService(5)
 
+	// Code Review 1 Services
+	badReview1Svc := codereview1.NewBadService()
+	goodReview1Svc := codereview1.NewGoodService(1024*1024, log)
+	simReview1Svc := codereview1.NewSimulatorService(badReview1Svc)
+
 	// 4. Initialize Handlers
 	log.Debug().Msg("Initializing HTTP handlers")
 	solutionsHandler := api.NewSolutionsHandler(solutions)
 	paymentHandler := api.NewPaymentHandler(paymentSvc, log)
 	workerPoolHandler := api.NewWorkerPoolHandler(workerPoolSvc, log)
+	codeReview1Handler := api.NewCodeReview1Handler(badReview1Svc, goodReview1Svc, simReview1Svc, log)
 
 	log.Info().Msg("Dependency injection container initialized")
 
 	return &Container{
-		Logger:            log,
-		SolutionsHandler:  solutionsHandler,
-		PaymentHandler:    paymentHandler,
-		WorkerPoolHandler: workerPoolHandler,
+		Logger:             log,
+		SolutionsHandler:   solutionsHandler,
+		PaymentHandler:     paymentHandler,
+		WorkerPoolHandler:  workerPoolHandler,
+		CodeReview1Handler: codeReview1Handler,
 	}
 }

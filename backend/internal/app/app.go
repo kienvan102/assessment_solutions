@@ -26,6 +26,7 @@ func New(log logger.Logger) *App {
 		container.SolutionsHandler,
 		container.PaymentHandler,
 		container.WorkerPoolHandler,
+		container.CodeReview1Handler,
 	)
 
 	port := os.Getenv("PORT")
