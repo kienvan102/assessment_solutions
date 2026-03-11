@@ -2,10 +2,10 @@ package app
 
 import (
 	"net/http"
-	"os"
 
 	"sghassessment/internal/api"
 	"sghassessment/internal/di"
+	"sghassessment/pkg/config"
 	"sghassessment/pkg/logger"
 )
 
@@ -17,9 +17,9 @@ type App struct {
 }
 
 // New constructs the application, wires all dependencies, and sets up routes.
-func New(log logger.Logger) *App {
+func New(cfg config.AppConfig, log logger.Logger) *App {
 	// Initialize the dependency injection container
-	container := di.NewContainer(log)
+	container := di.NewContainer(cfg, log)
 
 	// Setup Router with injected handlers
 	router := api.SetupRouter(
@@ -32,14 +32,9 @@ func New(log logger.Logger) *App {
 		container.Sql2Handler,
 	)
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-
 	return &App{
 		router: router,
-		port:   port,
+		port:   cfg.Port,
 		logger: log,
 	}
 }

@@ -11,19 +11,7 @@ type Service struct {
 	db *sql.DB
 }
 
-func NewService() (*Service, error) {
-	// Use an in-memory database that is shared within this connection
-	// Using a unique URI ensures the memory DB persists across queries for this db object
-	db, err := sql.Open("sqlite", "file:sql1?mode=memory&cache=shared")
-	if err != nil {
-		return nil, fmt.Errorf("failed to open sqlite db: %w", err)
-	}
-
-	// Ensure connection is established
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping sqlite db: %w", err)
-	}
-
+func NewService(db *sql.DB) (*Service, error) {
 	svc := &Service{db: db}
 	if err := svc.seedDatabase(); err != nil {
 		return nil, fmt.Errorf("failed to seed database: %w", err)

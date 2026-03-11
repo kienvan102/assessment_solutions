@@ -1,9 +1,6 @@
 package di
 
 import (
-	"os"
-	"time"
-
 	"sghassessment/internal/api"
 	"sghassessment/internal/solutions/codereview1"
 	"sghassessment/internal/solutions/codereview2"
@@ -11,6 +8,8 @@ import (
 	"sghassessment/internal/solutions/sql1"
 	"sghassessment/internal/solutions/sql2"
 	"sghassessment/internal/solutions/workerpool"
+	"sghassessment/pkg/config"
+	"sghassessment/pkg/database"
 	"sghassessment/pkg/logger"
 	"sghassessment/pkg/store"
 )
@@ -28,8 +27,8 @@ type Container struct {
 	Sql2Handler        *api.Sql2Handler
 }
 
-// NewContainer initializes and wires all application dependencies.
-func NewContainer(log logger.Logger) *Container {
+// NewContainer initializes and wires all dependencies for the application.
+func NewContainer(cfg config.AppConfig, log logger.Logger) *Container {
 	// 1. Load configuration / static data
 	log.Debug().Msg("Loading solutions metadata")
 	solutions, err := api.LoadSolutions(log)
@@ -37,46 +36,49 @@ func NewContainer(log logger.Logger) *Container {
 		log.Warn().Err(err).Msg("Could not load solutions")
 	}
 
-	delay := 60 * time.Second
-	if raw := os.Getenv("PAYMENT_PROCESSING_DELAY"); raw != "" {
-		if parsed, err := time.ParseDuration(raw); err == nil {
-			delay = parsed
-			log.Debug().Dur("delay", delay).Msg("Payment processing delay configured")
-		}
-	}
-
 	// 2. Initialize Stores
 	log.Debug().Msg("Initializing data stores")
 	txStore := store.New[string, payment.Transaction]()
 
-	// 3. Initialize Services
+	// 3. Initialize Databases
+	log.Debug().Msg("Initializing databases")
+	db1, err := database.NewInMemorySQLite("sql1")
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to open SQL1 db")
+	}
+	db2, err := database.NewInMemorySQLite("sql2")
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to open SQL2 db")
+	}
+
+	// 4. Initialize Services
 	log.Debug().Msg("Initializing services")
-	paymentSvc := payment.NewService(txStore, delay)
-	workerPoolSvc := workerpool.NewService(5)
+	paymentSvc := payment.NewService(txStore, cfg.PaymentProcessingDelay)
+	workerPoolSvc := workerpool.NewService(cfg.WorkerPoolSize)
 
 	// Code Review 1 Services
 	badReview1Svc := codereview1.NewBadService()
-	goodReview1Svc := codereview1.NewGoodService(1024*1024, log)
+	goodReview1Svc := codereview1.NewGoodService(cfg.CodeReviewMaxBodySize, log)
 	simReview1Svc := codereview1.NewSimulatorService(badReview1Svc)
 
 	// Code Review 2 Services
 	badReview2Svc := codereview2.NewBadService()
-	goodReview2Svc := codereview2.NewGoodService(1024*1024, log)
+	goodReview2Svc := codereview2.NewGoodService(cfg.CodeReviewMaxBodySize, log)
 	simReview2Svc := codereview2.NewSimulatorService(badReview2Svc)
 
 	// SQL 1 Services
-	sql1Svc, err := sql1.NewService()
+	sql1Svc, err := sql1.NewService(db1)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize SQL 1 service")
 	}
 
 	// SQL 2 Services
-	sql2Svc, err := sql2.NewService()
+	sql2Svc, err := sql2.NewService(db2)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize SQL 2 service")
 	}
 
-	// 4. Initialize Handlers
+	// 5. Initialize Handlers
 	log.Debug().Msg("Initializing HTTP handlers")
 	solutionsHandler := api.NewSolutionsHandler(solutions)
 	paymentHandler := api.NewPaymentHandler(paymentSvc, log)
