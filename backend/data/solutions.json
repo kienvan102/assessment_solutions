@@ -40,5 +40,38 @@
       }
     ],
     "sample_payload": "{\n  \"userID\": \"user_123\",\n  \"amount\": 100.50,\n  \"transactionID\": \"tx_abc_123\"\n}"
+  },
+  {
+    "id": "q2",
+    "title": "Question 2: Worker Pool Task Processor",
+    "description": "Implement a worker pool that processes 100 tasks (squaring numbers) using only 5 concurrent workers, returning results in order.",
+    "expected_behaviors": [
+      "Given 100 tasks and 5 workers, all tasks should be processed concurrently with max 5 workers running at once.",
+      "Results should be returned in the original task order (task 1, task 2, ..., task 100).",
+      "The execution time should demonstrate concurrency benefits compared to sequential processing.",
+      "Each result should show which worker processed it for transparency."
+    ],
+    "code": "func (s *Service) ProcessTasks(numTasks, poolSize int) ([]Result, time.Duration, error) {\n\tstart := time.Now()\n\ttasks := make(chan Task, numTasks)\n\tresults := make(chan Result, numTasks)\n\n\t// Spawn worker goroutines\n\tfor w := 1; w <= poolSize; w++ {\n\t\tgo s.worker(w, tasks, results)\n\t}\n\n\t// Send all tasks\n\tfor i := 1; i <= numTasks; i++ {\n\t\ttasks <- Task{ID: i, Input: i}\n\t}\n\tclose(tasks)\n\n\t// Collect results\n\tresultSlice := make([]Result, 0, numTasks)\n\tfor i := 0; i < numTasks; i++ {\n\t\tresultSlice = append(resultSlice, <-results)\n\t}\n\tclose(results)\n\n\t// Sort by TaskID to maintain order\n\tsort.Slice(resultSlice, func(i, j int) bool {\n\t\treturn resultSlice[i].TaskID < resultSlice[j].TaskID\n\t})\n\n\treturn resultSlice, time.Since(start), nil\n}",
+    "endpoint": "/api/workerpool",
+    "method": "POST",
+    "input_fields": [
+      {
+        "name": "numTasks",
+        "label": "Number of Tasks",
+        "type": "number",
+        "required": true,
+        "default": "100",
+        "placeholder": "e.g. 100"
+      },
+      {
+        "name": "poolSize",
+        "label": "Worker Pool Size",
+        "type": "number",
+        "required": true,
+        "default": "5",
+        "placeholder": "e.g. 5"
+      }
+    ],
+    "sample_payload": "{\n  \"numTasks\": 100,\n  \"poolSize\": 5\n}"
   }
 ]
