@@ -125,9 +125,9 @@ export default function CodeReviewCard({ solution }: { solution: Solution }) {
                 onChange={(e) => setAction(e.target.value as any)}
                 style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
               >
-                <option value="bad">1. Test Bad Implementation (Try XSS payload)</option>
-                <option value="good">2. Test Good Implementation (See proper JSON response)</option>
-                <option value="simulate">3. Simulate Race Condition (Fires 100 concurrent requests)</option>
+                <option value="bad">1. Test Original Flawed Implementation</option>
+                <option value="good">2. Test My Fixed Implementation</option>
+                <option value="simulate">3. Simulate Race Condition</option>
               </select>
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function CodeReviewCard({ solution }: { solution: Solution }) {
                 placeholder="Enter text to post to the handler..."
               />
               <small style={{ color: '#666', display: 'block', marginTop: '0.25rem' }}>
-                {action === 'bad' ? '💡 Try putting HTML tags like <h1>hello</h1> or <script>alert(1)</script> to see the XSS vulnerability in action.' : '💡 The good handler safely encodes this into JSON and sets proper headers.'}
+                {action === 'bad' ? '💡 Try an XSS payload like <script>alert(1)</script> to see the vulnerability.' : '💡 My fixed handler safely encodes this into JSON and sets proper headers.'}
               </small>
             </div>
           )}
@@ -153,8 +153,8 @@ export default function CodeReviewCard({ solution }: { solution: Solution }) {
             <div style={{ padding: '1rem', backgroundColor: '#fff3cd', borderRadius: '4px', borderLeft: '4px solid #ffc107', marginBottom: '1rem' }}>
               <strong>What does this do?</strong>
               <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>
-                This will send 100 concurrent HTTP requests to the Bad Implementation, each with a unique payload (e.g., "DataPayload-1", "DataPayload-2"). 
-                Because the handler writes to a global variable without a mutex, requests will overwrite each other's data before they can write it to the response stream.
+                This sends 100 concurrent HTTP requests to the original flawed handler. 
+                Because the handler writes to a global variable without a mutex, requests overwrite each other's data before writing to the response stream.
               </p>
             </div>
           )}

@@ -122,7 +122,7 @@ GROUP BY u.id, u.name;`);
             onClick={handleLoadSolution}
             style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem', backgroundColor: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
           >
-            Load Expected Solution
+            Load My Solution
           </button>
         </div>
         <textarea
