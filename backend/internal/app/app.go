@@ -27,6 +27,7 @@ func New(log logger.Logger) *App {
 		container.PaymentHandler,
 		container.WorkerPoolHandler,
 		container.CodeReview1Handler,
+		container.CodeReview2Handler,
 		container.Sql1Handler,
 		container.Sql2Handler,
 	)

@@ -49,7 +49,7 @@ export default function SolutionsPage() {
           <p>No solutions found.</p>
         ) : (
           solutions.map(solution => {
-            if (solution.id === 'q3') {
+            if (solution.id === 'q3' || solution.id === 'q6') {
               return <CodeReviewCard key={solution.id} solution={solution} />;
             }
             if (solution.id === 'q4') {

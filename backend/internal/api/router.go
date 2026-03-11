@@ -11,6 +11,7 @@ func SetupRouter(
 	paymentHandler *PaymentHandler,
 	workerPoolHandler *WorkerPoolHandler,
 	codeReview1Handler *CodeReview1Handler,
+	codeReview2Handler *CodeReview2Handler,
 	sql1Handler *Sql1Handler,
 	sql2Handler *Sql2Handler,
 ) *http.ServeMux {
@@ -25,6 +26,7 @@ func SetupRouter(
 	mux.Handle("/api/pay", paymentHandler)
 	mux.Handle("/api/workerpool", workerPoolHandler)
 	mux.Handle("/api/codereview1", codeReview1Handler)
+	mux.Handle("/api/codereview2", codeReview2Handler)
 	mux.Handle("/api/sql1", sql1Handler)
 	mux.Handle("/api/sql2", sql2Handler)
 
