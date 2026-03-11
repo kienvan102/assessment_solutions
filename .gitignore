@@ -1,0 +1,61 @@
+# Whitelist-style .gitignore
+# Ignore everything by default
+*
+
+# Allow directories (required for whitelist approach)
+!*/
+
+# ==========================================
+# Root Level Files
+# ==========================================
+!.gitignore
+!README.md
+!Makefile
+!docker-compose.yml
+
+# ==========================================
+# Backend (Go)
+# ==========================================
+!/backend/
+!/backend/cmd/
+!/backend/cmd/**
+!/backend/internal/
+!/backend/internal/**
+!/backend/pkg/
+!/backend/pkg/**
+!/backend/data/
+!/backend/data/**
+!/backend/go.mod
+!/backend/go.sum
+!/backend/Dockerfile
+!/backend/.dockerignore
+
+# ==========================================
+# Frontend (React/TypeScript)
+# ==========================================
+!/web/
+!/web/src/
+!/web/src/**
+!/web/public/
+!/web/public/**
+!/web/index.html
+!/web/package.json
+!/web/package-lock.json
+!/web/tsconfig.json
+!/web/tsconfig.node.json
+!/web/vite.config.ts
+!/web/.eslintrc.cjs
+!/web/Dockerfile
+!/web/.dockerignore
+
+# ==========================================
+# Scripts
+# ==========================================
+!/scripts/
+!/scripts/**
+
+# ==========================================
+# CI/CD
+# ==========================================
+!/.github/
+!/.github/**

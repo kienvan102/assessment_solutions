@@ -1,0 +1,44 @@
+[
+  {
+    "id": "q1",
+    "title": "Question : Idempotent Payment System",
+    "description": "Build a small service in Go that simulates a payment system with an idempotent POST /pay endpoint.",
+    "expected_behaviors": [
+      "When a valid payment request is sent for a new transaction ID, it should return a transaction with status 'pending'.",
+      "The system should simulate processing and eventually transition the transaction status to 'processed'.",
+      "If the exact same transaction ID is sent again, it should return the same transaction (Idempotency), showing the current status (pending or processed).",
+      "If the same transaction ID is sent but with a different user ID or amount, it should reject the request to prevent conflicts.",
+      "If the amount is <= 0 or the transaction ID is empty, it should return a bad request error."
+    ],
+    "code": "func (s *Service) ProcessPayment(userID string, amount float64, transactionID string) (Transaction, bool, error) {\n\tif existingTx, exists := s.txStore.Get(transactionID); exists {\n\t\treturn existingTx, true, nil\n\t}\n\n\tnewTx := Transaction{\n\t\tTransactionID: transactionID,\n\t\tUserID:        userID,\n\t\tAmount:        amount,\n\t\tStatus:        \"pending\",\n\t}\n\ts.txStore.Set(transactionID, newTx)\n\n\t// Simulate async processing\n\tdelay := s.processingDelay\n\tgo func(txID string) {\n\t\tif delay > 0 {\n\t\t\ttime.Sleep(delay)\n\t\t}\n\t\ts.txStore.Update(txID, func(tx Transaction) Transaction {\n\t\t\ttx.Status = \"processed\"\n\t\t\treturn tx\n\t\t})\n\t}(transactionID)\n\n\treturn newTx, false, nil\n}",
+    "endpoint": "/api/pay",
+    "method": "POST",
+    "input_fields": [
+      {
+        "name": "userID",
+        "label": "User ID",
+        "type": "string",
+        "required": true,
+        "default": "user_123",
+        "placeholder": "e.g. user_123"
+      },
+      {
+        "name": "amount",
+        "label": "Amount",
+        "type": "number",
+        "required": true,
+        "default": "100.50",
+        "placeholder": "e.g. 100.50"
+      },
+      {
+        "name": "transactionID",
+        "label": "Transaction ID",
+        "type": "string",
+        "required": true,
+        "default": "tx_abc_123",
+        "placeholder": "e.g. tx_abc_123"
+      }
+    ],
+    "sample_payload": "{\n  \"userID\": \"user_123\",\n  \"amount\": 100.50,\n  \"transactionID\": \"tx_abc_123\"\n}"
+  }
+]
