@@ -13,7 +13,12 @@
 # ==========================================
 # Backend (Go)
 # ==========================================
+# 1. First, tell Git to NOT ignore the backend folder itself so it can look inside
 !/backend/
+# 2. Then, re-ignore everything INSIDE the backend folder by default
+/backend/*
+# 3. Finally, explicitly whitelist ONLY the files/folders we want to track
+!/backend/.env.example
 !/backend/cmd/
 !/backend/cmd/**
 !/backend/internal/

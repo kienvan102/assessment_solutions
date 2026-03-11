@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil" // Used intentionally to match the prompt's bad code
+	"io/ioutil" // Used intentionally to match the flawed code
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -18,7 +18,7 @@ import (
 // THE BAD IMPLEMENTATION
 // ==========================================
 
-// Matches exactly the prompt's `var result string`
+// Matches exactly the problematic `var result string`
 var result = ""
 
 type BadService struct{}
@@ -28,7 +28,7 @@ func NewBadService() *BadService {
 }
 
 func (s *BadService) Handler(w http.ResponseWriter, r *http.Request) {
-	// Directly mirroring the prompt's code issues
+	// Directly mirroring the problematic code issues
 	body, _ := ioutil.ReadAll(r.Body)
 	result = string(body)
 	fmt.Fprintf(w, "Saved: %s", result)
@@ -112,7 +112,7 @@ func (s *SimulatorService) SimulateRace() SimulationResult {
 		wg.Add(1)
 		go func(index int) {
 			defer wg.Done()
-			
+
 			// Tiny delay to cause overlap
 			time.Sleep(time.Duration(index%5) * time.Millisecond)
 
@@ -149,10 +149,10 @@ func (s *SimulatorService) SimulateRace() SimulationResult {
 }
 
 type Problem struct {
-	ID          int      `json:"id"`
-	Title       string   `json:"title"`
-	Description string   `json:"description"`
-	Severity    string   `json:"severity"`
+	ID          int    `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Severity    string `json:"severity"`
 }
 
 type Improvement struct {

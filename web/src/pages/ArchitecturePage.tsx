@@ -85,7 +85,7 @@ export default function ArchitecturePage() {
           <p style={{ margin: '0 0 1rem 0' }}><strong>Approach:</strong> Dynamic In-Memory SQL Playground</p>
           <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
             <li>I used a CGO-free SQLite driver to bootstrap an ephemeral in-memory database on application startup.</li>
-            <li>I seed the database programmatically with the exact <code>users</code> and <code>orders</code> table structures shown in the prompt.</li>
+            <li>I seed the database programmatically with the exact <code>users</code> and <code>orders</code> table structures required for the assessment.</li>
             <li>I built a custom query editor UI that allows you to execute raw SQL against the in-memory database and view the parsed rows in a dynamic HTML table to prove my query works.</li>
           </ul>
         </div>

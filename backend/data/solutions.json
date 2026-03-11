@@ -158,7 +158,8 @@
       "My 'Good' API correctly restricts payload size, handles errors, and runs concurrently without data corruption.",
       "A complete written analysis is provided outlining all problems and my improvements."
     ],
-    "code": "// --- BAD IMPLEMENTATION ---\npackage main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\n)\n\nvar result string\n\nfunc handler(w http.ResponseWriter, r *http.Request) {\n\tbody, _ := ioutil.ReadAll(r.Body)\n\tresult = string(body)\n\tfmt.Fprintf(w, \"Saved: %s\", result)\n\tdefer r.Body.Close()\n}\n\nfunc main() {\n\thttp.HandleFunc(\"/\", handler)\n\thttp.ListenAndServe(\":8080\", nil)\n}",
+    "code": "// --- BAD IMPLEMENTATION ---\npackage main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\n)\n\nvar result string\n\nfunc handler(w http.ResponseWriter, r *http.Request) {\n\tbody, _ := ioutil.ReadAll(r.Body)\n\tresult = string(body)\n\tfmt.Fprintf(w, \"Saved: %s\", result)\n\tdefer r.Body.Close()\n}\n\n// --- GOOD IMPLEMENTATION ---\nfunc (s *GoodService) Handler(w http.ResponseWriter, r *http.Request) {\n\t// 1. Defer close immediately\n\tdefer r.Body.Close()\n\n\t// 2. Wrap body to prevent large payload memory exhaustion (DoS)\n\tr.Body = http.MaxBytesReader(w, r.Body, s.maxBodySize)\n\n\t// 3. Handle errors and use modern io.ReadAll\n\tbody, err := io.ReadAll(r.Body)\n\tif err != nil {\n\t\thttp.Error(w, \"Invalid request body\", http.StatusBadRequest)\n\t\treturn\n\t}\n\n\t// 4. Use a local variable to prevent race conditions\n\tlocalResult := string(body)\n\n\t// 5. Respond with proper JSON and Content-Type to prevent XSS\n\tw.Header().Set(\"Content-Type\", \"application/json\")\n\tw.WriteHeader(http.StatusOK)\n\tjson.NewEncoder(w).Encode(map[string]string{\n\t\t\"message\": \"Saved successfully\",\n\t\t\"data\":    localResult,\n\t})\n}",
+
     "endpoint": "/api/codereview2",
     "method": "POST",
     "input_fields": [

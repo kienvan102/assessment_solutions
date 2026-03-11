@@ -13,17 +13,7 @@ type Service struct {
 	db *sql.DB
 }
 
-func NewService() (*Service, error) {
-	// Unique shared memory DB for sql2
-	db, err := sql.Open("sqlite", "file:sql2?mode=memory&cache=shared")
-	if err != nil {
-		return nil, fmt.Errorf("failed to open sqlite db: %w", err)
-	}
-
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping sqlite db: %w", err)
-	}
-
+func NewService(db *sql.DB) (*Service, error) {
 	svc := &Service{db: db}
 	if err := svc.ResetDatabase(); err != nil {
 		return nil, fmt.Errorf("failed to seed database: %w", err)

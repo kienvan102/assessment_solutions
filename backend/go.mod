@@ -3,6 +3,7 @@ module sghassessment
 go 1.24.0
 
 require (
+	github.com/joho/godotenv v1.5.1
 	github.com/rs/zerolog v1.34.0
 	modernc.org/sqlite v1.46.1
 )
