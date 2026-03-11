@@ -1,52 +1,61 @@
 package di
 
 import (
-	"fmt"
 	"os"
 	"time"
 
 	"sghassessment/internal/api"
 	"sghassessment/internal/solutions/payment"
 	"sghassessment/internal/solutions/workerpool"
+	"sghassessment/pkg/logger"
 	"sghassessment/pkg/store"
 )
 
 // Container holds all instantiated dependencies for the application.
 // It acts as a central registry for services and handlers.
 type Container struct {
+	Logger            logger.Logger
 	SolutionsHandler  *api.SolutionsHandler
 	PaymentHandler    *api.PaymentHandler
 	WorkerPoolHandler *api.WorkerPoolHandler
 }
 
 // NewContainer initializes and wires all application dependencies.
-func NewContainer() *Container {
+func NewContainer(log logger.Logger) *Container {
 	// 1. Load configuration / static data
-	solutions, err := api.LoadSolutions()
+	log.Debug().Msg("Loading solutions metadata")
+	solutions, err := api.LoadSolutions(log)
 	if err != nil {
-		fmt.Printf("Warning: could not load solutions: %v\n", err)
+		log.Warn().Err(err).Msg("Could not load solutions")
 	}
 
 	delay := 60 * time.Second
 	if raw := os.Getenv("PAYMENT_PROCESSING_DELAY"); raw != "" {
 		if parsed, err := time.ParseDuration(raw); err == nil {
 			delay = parsed
+			log.Debug().Dur("delay", delay).Msg("Payment processing delay configured")
 		}
 	}
 
 	// 2. Initialize Stores
+	log.Debug().Msg("Initializing data stores")
 	txStore := store.New[string, payment.Transaction]()
 
 	// 3. Initialize Services
+	log.Debug().Msg("Initializing services")
 	paymentSvc := payment.NewService(txStore, delay)
 	workerPoolSvc := workerpool.NewService(5)
 
 	// 4. Initialize Handlers
+	log.Debug().Msg("Initializing HTTP handlers")
 	solutionsHandler := api.NewSolutionsHandler(solutions)
-	paymentHandler := api.NewPaymentHandler(paymentSvc)
-	workerPoolHandler := api.NewWorkerPoolHandler(workerPoolSvc)
+	paymentHandler := api.NewPaymentHandler(paymentSvc, log)
+	workerPoolHandler := api.NewWorkerPoolHandler(workerPoolSvc, log)
+
+	log.Info().Msg("Dependency injection container initialized")
 
 	return &Container{
+		Logger:            log,
 		SolutionsHandler:  solutionsHandler,
 		PaymentHandler:    paymentHandler,
 		WorkerPoolHandler: workerPoolHandler,
