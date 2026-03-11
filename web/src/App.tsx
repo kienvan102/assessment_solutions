@@ -10,7 +10,6 @@ export default function App() {
         <Routes>
           <Route path="/architecture" element={<ArchitecturePage />} />
           <Route path="/" element={<SolutionsPage />} />
-  
         </Routes>
       </Layout>
     </BrowserRouter>
