@@ -131,5 +131,54 @@
       }
     ],
     "sample_payload": "{\n  \"query\": \"SELECT * FROM users;\"\n}"
+  },
+  {
+    "id": "q5",
+    "title": "Question: SQL Optimization / Indexing",
+    "description": "Suppose you have a table with millions of rows (`transactions`). Write a query to get the last 10 transactions of a given user (user_id = 123), and suggest one index that would improve query performance.",
+    "expected_behaviors": [
+      "The query should correctly return the last 10 transactions for user_id = 123 ordered by created_at DESC.",
+      "The index suggestion should optimize the query (e.g., CREATE INDEX idx_user_created ON transactions(user_id, created_at)).",
+      "The Explain Query tool should show 'USING INDEX' instead of 'SCAN TABLE' after the index is applied."
+    ],
+    "code": "-- Query:\nSELECT * FROM transactions \nWHERE user_id = 123 \nORDER BY created_at DESC \nLIMIT 10;\n\n-- Recommended Index:\nCREATE INDEX idx_user_created ON transactions(user_id, created_at);",
+    "endpoint": "/api/sql2",
+    "method": "POST",
+    "input_fields": [],
+    "sample_payload": "{\n  \"action\": \"query\",\n  \"query\": \"SELECT * FROM transactions WHERE user_id = 123 LIMIT 10;\"\n}"
+  },
+  {
+    "id": "q6",
+    "title": "Question: Code Review 2 - HTTP Handler",
+    "description": "Given a poorly structured Go code, suggest ways to refactor and improve the code. We've built an interactive playground for you to test both the original (bad) implementation and our fixed (good) implementation.",
+    "expected_behaviors": [
+      "The 'Bad' API should exhibit a race condition under load.",
+      "The 'Bad' API will allow infinite payload sizes (DoS vulnerability).",
+      "The 'Bad' API will return raw user input (XSS vulnerability).",
+      "The 'Good' API correctly restricts payload size, handles errors, and runs concurrently without data corruption.",
+      "A complete written analysis should be available outlining all problems and improvements."
+    ],
+    "code": "// --- BAD IMPLEMENTATION ---\npackage main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\n)\n\nvar result string\n\nfunc handler(w http.ResponseWriter, r *http.Request) {\n\tbody, _ := ioutil.ReadAll(r.Body)\n\tresult = string(body)\n\tfmt.Fprintf(w, \"Saved: %s\", result)\n\tdefer r.Body.Close()\n}\n\nfunc main() {\n\thttp.HandleFunc(\"/\", handler)\n\thttp.ListenAndServe(\":8080\", nil)\n}",
+    "endpoint": "/api/codereview2",
+    "method": "POST",
+    "input_fields": [
+      {
+        "name": "action",
+        "label": "Action",
+        "type": "string",
+        "required": true,
+        "default": "bad",
+        "placeholder": "bad, good, simulate, or analysis"
+      },
+      {
+        "name": "payload",
+        "label": "Payload (For bad/good test)",
+        "type": "string",
+        "required": false,
+        "default": "<script>alert(1)</script>",
+        "placeholder": "Data to send"
+      }
+    ],
+    "sample_payload": "{\n  \"action\": \"bad\",\n  \"payload\": \"<script>alert(1)</script>\"\n}"
   }
 ]

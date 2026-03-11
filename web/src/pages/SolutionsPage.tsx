@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import SolutionCard from '../components/SolutionCard';
 import CodeReviewCard from '../components/CodeReview/CodeReviewCard';
 import SqlCard from '../components/SQL/SqlCard';
+import SqlOptimizationCard from '../components/SQL/SqlOptimizationCard';
 import { getHealth, getSolutions } from '../services/api';
 import type { Solution } from '../types/solution';
 
@@ -48,11 +49,14 @@ export default function SolutionsPage() {
           <p>No solutions found.</p>
         ) : (
           solutions.map(solution => {
-            if (solution.id === 'q3') {
+            if (solution.id === 'q3' || solution.id === 'q6') {
               return <CodeReviewCard key={solution.id} solution={solution} />;
             }
             if (solution.id === 'q4') {
               return <SqlCard key={solution.id} solution={solution} />;
+            }
+            if (solution.id === 'q5') {
+              return <SqlOptimizationCard key={solution.id} solution={solution} />;
             }
             return <SolutionCard key={solution.id} solution={solution} />;
           })

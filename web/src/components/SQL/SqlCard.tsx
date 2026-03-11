@@ -3,7 +3,7 @@ import type { Solution } from '../../types/solution';
 import { requestSolutionEndpoint } from '../../services/api';
 
 export default function SqlCard({ solution }: { solution: Solution }) {
-  const [query, setQuery] = useState('SELECT * FROM users;');
+  const [query, setQuery] = useState(solution.code || 'SELECT * FROM users;');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ columns?: string[], rows?: any[][], error?: string } | null>(null);
 

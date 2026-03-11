@@ -24,7 +24,7 @@ export default function CodeReviewCard({ solution }: { solution: Solution }) {
     setLoadingAnalysis(true);
     try {
       const res = await requestSolutionEndpoint({
-        endpoint: '/api/codereview1',
+        endpoint: solution.endpoint || '/api/codereview1',
         method: 'POST',
         body: JSON.stringify({ action: 'analysis', payload: '' })
       });
@@ -43,7 +43,7 @@ export default function CodeReviewCard({ solution }: { solution: Solution }) {
     
     try {
       const res = await requestSolutionEndpoint({
-        endpoint: '/api/codereview1',
+        endpoint: solution.endpoint || '/api/codereview1',
         method: 'POST',
         body: JSON.stringify({ action, payload })
       });

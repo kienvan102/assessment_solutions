@@ -6,8 +6,10 @@ import (
 
 	"sghassessment/internal/api"
 	"sghassessment/internal/solutions/codereview1"
+	"sghassessment/internal/solutions/codereview2"
 	"sghassessment/internal/solutions/payment"
 	"sghassessment/internal/solutions/sql1"
+	"sghassessment/internal/solutions/sql2"
 	"sghassessment/internal/solutions/workerpool"
 	"sghassessment/pkg/logger"
 	"sghassessment/pkg/store"
@@ -21,7 +23,9 @@ type Container struct {
 	PaymentHandler     *api.PaymentHandler
 	WorkerPoolHandler  *api.WorkerPoolHandler
 	CodeReview1Handler *api.CodeReview1Handler
+	CodeReview2Handler *api.CodeReview2Handler
 	Sql1Handler        *api.Sql1Handler
+	Sql2Handler        *api.Sql2Handler
 }
 
 // NewContainer initializes and wires all application dependencies.
@@ -55,10 +59,21 @@ func NewContainer(log logger.Logger) *Container {
 	goodReview1Svc := codereview1.NewGoodService(1024*1024, log)
 	simReview1Svc := codereview1.NewSimulatorService(badReview1Svc)
 
+	// Code Review 2 Services
+	badReview2Svc := codereview2.NewBadService()
+	goodReview2Svc := codereview2.NewGoodService(1024*1024, log)
+	simReview2Svc := codereview2.NewSimulatorService(badReview2Svc)
+
 	// SQL 1 Services
 	sql1Svc, err := sql1.NewService()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize SQL 1 service")
+	}
+
+	// SQL 2 Services
+	sql2Svc, err := sql2.NewService()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize SQL 2 service")
 	}
 
 	// 4. Initialize Handlers
@@ -67,7 +82,9 @@ func NewContainer(log logger.Logger) *Container {
 	paymentHandler := api.NewPaymentHandler(paymentSvc, log)
 	workerPoolHandler := api.NewWorkerPoolHandler(workerPoolSvc, log)
 	codeReview1Handler := api.NewCodeReview1Handler(badReview1Svc, goodReview1Svc, simReview1Svc, log)
+	codeReview2Handler := api.NewCodeReview2Handler(badReview2Svc, goodReview2Svc, simReview2Svc, log)
 	sql1Handler := api.NewSql1Handler(sql1Svc, log)
+	sql2Handler := api.NewSql2Handler(sql2Svc, log)
 
 	log.Info().Msg("Dependency injection container initialized")
 
@@ -77,6 +94,8 @@ func NewContainer(log logger.Logger) *Container {
 		PaymentHandler:     paymentHandler,
 		WorkerPoolHandler:  workerPoolHandler,
 		CodeReview1Handler: codeReview1Handler,
+		CodeReview2Handler: codeReview2Handler,
 		Sql1Handler:        sql1Handler,
+		Sql2Handler:        sql2Handler,
 	}
 }
