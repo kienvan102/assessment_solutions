@@ -2,9 +2,6 @@
 # Ignore everything by default
 *
 
-# Allow directories (required for whitelist approach)
-!*/
-
 # ==========================================
 # Root Level Files
 # ==========================================
