@@ -73,5 +73,39 @@
       }
     ],
     "sample_payload": "{\n  \"numTasks\": 100,\n  \"poolSize\": 5\n}"
+  },
+  {
+    "id": "q3",
+    "title": "Question: Code Review - HTTP Handler",
+    "description": "Identify problems in the given HTTP handler code and suggest improvements. We've built an interactive playground for you to test both the original (bad) implementation and our fixed (good) implementation.",
+    "expected_behaviors": [
+      "The 'Bad' API should exhibit a race condition under load.",
+      "The 'Bad' API will allow infinite payload sizes (DoS vulnerability).",
+      "The 'Bad' API will return raw user input (XSS vulnerability).",
+      "The 'Good' API correctly restricts payload size, handles errors, and runs concurrently without data corruption.",
+      "A complete written analysis should be available outlining all problems and improvements."
+    ],
+    "code": "// --- BAD IMPLEMENTATION ---\nvar data = \"\"\nfunc handler(w http.ResponseWriter, r *http.Request) {\n\tbody, _ := ioutil.ReadAll(r.Body)\n\tdata = string(body)\n\tfmt.Fprintf(w, \"Saved: %s\", data)\n\tdefer r.Body.Close()\n}\n\n// --- GOOD IMPLEMENTATION ---\nfunc (s *GoodService) Handler(w http.ResponseWriter, r *http.Request) {\n\tdefer r.Body.Close()\n\tr.Body = http.MaxBytesReader(w, r.Body, s.maxBodySize)\n\tbody, err := io.ReadAll(r.Body)\n\tif err != nil {\n\t\thttp.Error(w, \"Invalid request\", 400)\n\t\treturn\n\t}\n\tif len(body) == 0 { http.Error(w, \"Empty body\", 400); return }\n\n\tlocalData := string(body)\n\tw.Header().Set(\"Content-Type\", \"application/json\")\n\tjson.NewEncoder(w).Encode(map[string]string{\"status\": \"success\", \"saved\": localData})\n}",
+    "endpoint": "/api/codereview1",
+    "method": "POST",
+    "input_fields": [
+      {
+        "name": "action",
+        "label": "Action",
+        "type": "string",
+        "required": true,
+        "default": "bad",
+        "placeholder": "bad, good, simulate, or analysis"
+      },
+      {
+        "name": "payload",
+        "label": "Payload (For bad/good test)",
+        "type": "string",
+        "required": false,
+        "default": "<script>alert(1)</script>",
+        "placeholder": "Data to send"
+      }
+    ],
+    "sample_payload": "{\n  \"action\": \"bad\",\n  \"payload\": \"<script>alert(1)</script>\"\n}"
   }
 ]

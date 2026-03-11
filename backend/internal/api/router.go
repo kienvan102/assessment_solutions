@@ -10,6 +10,7 @@ func SetupRouter(
 	solutionsHandler *SolutionsHandler,
 	paymentHandler *PaymentHandler,
 	workerPoolHandler *WorkerPoolHandler,
+	codeReview1Handler *CodeReview1Handler,
 ) *http.ServeMux {
 	mux := http.NewServeMux()
 
@@ -21,6 +22,7 @@ func SetupRouter(
 	mux.Handle("/api/solutions", solutionsHandler)
 	mux.Handle("/api/pay", paymentHandler)
 	mux.Handle("/api/workerpool", workerPoolHandler)
+	mux.Handle("/api/codereview1", codeReview1Handler)
 
 	return mux
 }
