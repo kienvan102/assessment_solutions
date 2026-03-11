@@ -24,6 +24,7 @@ func New() *App {
 	router := api.SetupRouter(
 		container.SolutionsHandler,
 		container.PaymentHandler,
+		container.WorkerPoolHandler,
 	)
 
 	port := os.Getenv("PORT")

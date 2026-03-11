@@ -7,14 +7,16 @@ import (
 
 	"sghassessment/internal/api"
 	"sghassessment/internal/solutions/payment"
+	"sghassessment/internal/solutions/workerpool"
 	"sghassessment/pkg/store"
 )
 
 // Container holds all instantiated dependencies for the application.
 // It acts as a central registry for services and handlers.
 type Container struct {
-	SolutionsHandler *api.SolutionsHandler
-	PaymentHandler   *api.PaymentHandler
+	SolutionsHandler  *api.SolutionsHandler
+	PaymentHandler    *api.PaymentHandler
+	WorkerPoolHandler *api.WorkerPoolHandler
 }
 
 // NewContainer initializes and wires all application dependencies.
@@ -37,13 +39,16 @@ func NewContainer() *Container {
 
 	// 3. Initialize Services
 	paymentSvc := payment.NewService(txStore, delay)
+	workerPoolSvc := workerpool.NewService(5)
 
 	// 4. Initialize Handlers
 	solutionsHandler := api.NewSolutionsHandler(solutions)
 	paymentHandler := api.NewPaymentHandler(paymentSvc)
+	workerPoolHandler := api.NewWorkerPoolHandler(workerPoolSvc)
 
 	return &Container{
-		SolutionsHandler: solutionsHandler,
-		PaymentHandler:   paymentHandler,
+		SolutionsHandler:  solutionsHandler,
+		PaymentHandler:    paymentHandler,
+		WorkerPoolHandler: workerPoolHandler,
 	}
 }

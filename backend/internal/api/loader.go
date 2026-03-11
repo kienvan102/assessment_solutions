@@ -1,12 +1,10 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"os"
 
 	"sghassessment/internal/models"
+	"sghassessment/pkg/config"
 )
 
 // LoadSolutions reads solutions data from a JSON file.
@@ -22,27 +20,12 @@ func LoadSolutions() ([]models.Solution, error) {
 		"../data/solutions.json",
 	}
 
-	var data []byte
-	var err error
-	var loadedPath string
-
-	for _, p := range paths {
-		data, err = os.ReadFile(p)
-		if err == nil {
-			loadedPath = p
-			break
-		}
-	}
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to open solutions file, tried paths %v: %w", paths, err)
-	}
-	fmt.Printf("Loaded solutions from: %s\n", loadedPath)
-
 	var solutions []models.Solution
-	if err := json.NewDecoder(bytes.NewReader(data)).Decode(&solutions); err != nil {
-		return nil, fmt.Errorf("failed to parse solutions file: %w", err)
+	loadedPath, err := config.LoadJSONFile(&solutions, paths...)
+	if err != nil {
+		return nil, err
 	}
 
+	fmt.Printf("Loaded solutions from: %s\n", loadedPath)
 	return solutions, nil
 }

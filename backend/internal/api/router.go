@@ -9,6 +9,7 @@ import (
 func SetupRouter(
 	solutionsHandler *SolutionsHandler,
 	paymentHandler *PaymentHandler,
+	workerPoolHandler *WorkerPoolHandler,
 ) *http.ServeMux {
 	mux := http.NewServeMux()
 
@@ -19,6 +20,7 @@ func SetupRouter(
 
 	mux.Handle("/api/solutions", solutionsHandler)
 	mux.Handle("/api/pay", paymentHandler)
+	mux.Handle("/api/workerpool", workerPoolHandler)
 
 	return mux
 }
