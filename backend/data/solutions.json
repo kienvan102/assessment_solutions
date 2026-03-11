@@ -107,5 +107,29 @@
       }
     ],
     "sample_payload": "{\n  \"action\": \"bad\",\n  \"payload\": \"<script>alert(1)</script>\"\n}"
+  },
+  {
+    "id": "q4",
+    "title": "Question: SQL Left Join & Group By",
+    "description": "Write a query to list all users and their total order amount, including users with no orders.",
+    "expected_behaviors": [
+      "The result should contain 'name' and 'total_amount'.",
+      "Users with no orders should have a total_amount of 0 (or NULL if not coalesced, though 0 is preferred).",
+      "The query must execute successfully against the seeded SQLite database."
+    ],
+    "code": "SELECT \n    u.name, \n    COALESCE(SUM(o.amount), 0) as total_amount\nFROM users u\nLEFT JOIN orders o ON u.id = o.user_id\nGROUP BY u.id, u.name;",
+    "endpoint": "/api/sql1",
+    "method": "POST",
+    "input_fields": [
+      {
+        "name": "query",
+        "label": "SQL Query",
+        "type": "string",
+        "required": true,
+        "default": "SELECT * FROM users;",
+        "placeholder": "Write your SELECT query here..."
+      }
+    ],
+    "sample_payload": "{\n  \"query\": \"SELECT * FROM users;\"\n}"
   }
 ]

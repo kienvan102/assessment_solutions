@@ -1,13 +1,18 @@
 # Build stage
-FROM golang:1.22-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
-# The user will run go mod init separately, so we handle missing go.mod gracefully
-# In a real build, we'd copy go.mod and go.sum here, but we'll just copy everything
+# Copy dependency files first to leverage Docker layer caching
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy the rest of the source code
 COPY . .
 
-# Run go build, creating the binary at /app/server
+# Build the binary
 RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/api
 
 # Final stage
@@ -21,6 +26,10 @@ COPY --from=builder /app/server .
 
 # Copy the data folder to ensure the JSON file is available
 COPY --from=builder /app/data ./data
+
+# Set required environment variables
+ENV ENV=production
+ENV PORT=8080
 
 # Expose port 8080 to the outside world
 EXPOSE 8080

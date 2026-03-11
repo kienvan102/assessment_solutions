@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import SolutionCard from '../components/SolutionCard';
 import CodeReviewCard from '../components/CodeReview/CodeReviewCard';
+import SqlCard from '../components/SQL/SqlCard';
 import { getHealth, getSolutions } from '../services/api';
 import type { Solution } from '../types/solution';
 
@@ -49,6 +50,9 @@ export default function SolutionsPage() {
           solutions.map(solution => {
             if (solution.id === 'q3') {
               return <CodeReviewCard key={solution.id} solution={solution} />;
+            }
+            if (solution.id === 'q4') {
+              return <SqlCard key={solution.id} solution={solution} />;
             }
             return <SolutionCard key={solution.id} solution={solution} />;
           })
