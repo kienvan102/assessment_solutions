@@ -2,13 +2,13 @@
   {
     "id": "q1",
     "title": "Question: Idempotent Payment System",
-    "description": "Build a small service in Go that simulates a payment system with an idempotent POST /pay endpoint.",
+    "description": "Build a small service in Go that simulates a payment system with an idempotent POST /pay endpoint. I designed this to demonstrate state management and dependency injection.",
     "expected_behaviors": [
-      "When a valid payment request is sent for a new transaction ID, it should return a transaction with status 'pending'.",
-      "The system should simulate processing and eventually transition the transaction status to 'processed'.",
-      "If the exact same transaction ID is sent again, it should return the same transaction (Idempotency), showing the current status (pending or processed).",
-      "If the same transaction ID is sent but with a different user ID or amount, it should reject the request to prevent conflicts.",
-      "If the amount is <= 0 or the transaction ID is empty, it should return a bad request error."
+      "When a valid payment request is sent for a new transaction ID, it returns a transaction with status 'pending'.",
+      "My system simulates processing and eventually transitions the transaction status to 'processed'.",
+      "If the exact same transaction ID is sent again, it safely returns the same transaction (Idempotency), showing the current status (pending or processed).",
+      "If the same transaction ID is sent but with a different user ID or amount, it rejects the request to prevent conflicts.",
+      "If the amount is <= 0 or the transaction ID is empty, it returns a bad request error."
     ],
     "code": "func (s *Service) ProcessPayment(userID string, amount float64, transactionID string) (Transaction, bool, error) {\n\tif existingTx, exists := s.txStore.Get(transactionID); exists {\n\t\treturn existingTx, true, nil\n\t}\n\n\tnewTx := Transaction{\n\t\tTransactionID: transactionID,\n\t\tUserID:        userID,\n\t\tAmount:        amount,\n\t\tStatus:        \"pending\",\n\t}\n\ts.txStore.Set(transactionID, newTx)\n\n\t// Simulate async processing\n\tdelay := s.processingDelay\n\tgo func(txID string) {\n\t\tif delay > 0 {\n\t\t\ttime.Sleep(delay)\n\t\t}\n\t\ts.txStore.Update(txID, func(tx Transaction) Transaction {\n\t\t\ttx.Status = \"processed\"\n\t\t\treturn tx\n\t\t})\n\t}(transactionID)\n\n\treturn newTx, false, nil\n}",
     "endpoint": "/api/pay",
@@ -44,12 +44,12 @@
   {
     "id": "q2",
     "title": "Question: Worker Pool Task Processor",
-    "description": "Implement a worker pool that processes 100 tasks (squaring numbers) using only 5 concurrent workers, returning results in order.",
+    "description": "Implement a worker pool that processes 100 tasks (squaring numbers) using only 5 concurrent workers, returning results in order. I built this to demonstrate my proficiency with Go channels and goroutines.",
     "expected_behaviors": [
-      "Given 100 tasks and 5 workers, all tasks should be processed concurrently with max 5 workers running at once.",
-      "Results should be returned in the original task order (task 1, task 2, ..., task 100).",
-      "The execution time should demonstrate concurrency benefits compared to sequential processing.",
-      "Each result should show which worker processed it for transparency."
+      "Given 100 tasks and 5 workers, all tasks are processed concurrently with max 5 workers running at once.",
+      "My solution collects the results and returns them in the original task order (task 1, task 2, ..., task 100).",
+      "The execution time demonstrates concurrency benefits compared to sequential processing.",
+      "Each result shows which worker processed it for transparency."
     ],
     "code": "func (s *Service) ProcessTasks(numTasks, poolSize int) ([]Result, time.Duration, error) {\n\tstart := time.Now()\n\ttasks := make(chan Task, numTasks)\n\tresults := make(chan Result, numTasks)\n\n\t// Spawn worker goroutines\n\tfor w := 1; w <= poolSize; w++ {\n\t\tgo s.worker(w, tasks, results)\n\t}\n\n\t// Send all tasks\n\tfor i := 1; i <= numTasks; i++ {\n\t\ttasks <- Task{ID: i, Input: i}\n\t}\n\tclose(tasks)\n\n\t// Collect results\n\tresultSlice := make([]Result, 0, numTasks)\n\tfor i := 0; i < numTasks; i++ {\n\t\tresultSlice = append(resultSlice, <-results)\n\t}\n\tclose(results)\n\n\t// Sort by TaskID to maintain order\n\tsort.Slice(resultSlice, func(i, j int) bool {\n\t\treturn resultSlice[i].TaskID < resultSlice[j].TaskID\n\t})\n\n\treturn resultSlice, time.Since(start), nil\n}",
     "endpoint": "/api/workerpool",
@@ -77,13 +77,13 @@
   {
     "id": "q3",
     "title": "Question: Code Review - HTTP Handler",
-    "description": "Identify problems in the given HTTP handler code and suggest improvements. We've built an interactive playground for you to test both the original (bad) implementation and our fixed (good) implementation.",
+    "description": "Identify problems in the given HTTP handler code and suggest improvements. I have built an interactive playground to demonstrate the flaws in the original (bad) implementation and my proposed fixes in the (good) implementation.",
     "expected_behaviors": [
-      "The 'Bad' API should exhibit a race condition under load.",
-      "The 'Bad' API will allow infinite payload sizes (DoS vulnerability).",
-      "The 'Bad' API will return raw user input (XSS vulnerability).",
-      "The 'Good' API correctly restricts payload size, handles errors, and runs concurrently without data corruption.",
-      "A complete written analysis should be available outlining all problems and improvements."
+      "The 'Bad' API exhibits a race condition under load.",
+      "The 'Bad' API allows infinite payload sizes (DoS vulnerability).",
+      "The 'Bad' API returns raw user input (XSS vulnerability).",
+      "My 'Good' API correctly restricts payload size, handles errors, and runs concurrently without data corruption.",
+      "A complete written analysis is provided outlining all problems and my improvements."
     ],
     "code": "// --- BAD IMPLEMENTATION ---\nvar data = \"\"\nfunc handler(w http.ResponseWriter, r *http.Request) {\n\tbody, _ := ioutil.ReadAll(r.Body)\n\tdata = string(body)\n\tfmt.Fprintf(w, \"Saved: %s\", data)\n\tdefer r.Body.Close()\n}\n\n// --- GOOD IMPLEMENTATION ---\nfunc (s *GoodService) Handler(w http.ResponseWriter, r *http.Request) {\n\tdefer r.Body.Close()\n\tr.Body = http.MaxBytesReader(w, r.Body, s.maxBodySize)\n\tbody, err := io.ReadAll(r.Body)\n\tif err != nil {\n\t\thttp.Error(w, \"Invalid request\", 400)\n\t\treturn\n\t}\n\tif len(body) == 0 { http.Error(w, \"Empty body\", 400); return }\n\n\tlocalData := string(body)\n\tw.Header().Set(\"Content-Type\", \"application/json\")\n\tjson.NewEncoder(w).Encode(map[string]string{\"status\": \"success\", \"saved\": localData})\n}",
     "endpoint": "/api/codereview1",
@@ -111,11 +111,11 @@
   {
     "id": "q4",
     "title": "Question: SQL Left Join & Group By",
-    "description": "Write a query to list all users and their total order amount, including users with no orders.",
+    "description": "Write a query to list all users and their total order amount, including users with no orders. I embedded a real in-memory SQLite database to run this query dynamically.",
     "expected_behaviors": [
-      "The result should contain 'name' and 'total_amount'.",
-      "Users with no orders should have a total_amount of 0 (or NULL if not coalesced, though 0 is preferred).",
-      "The query must execute successfully against the seeded SQLite database."
+      "The query correctly returns 'name' and 'total_amount'.",
+      "Users with no orders successfully show a total_amount of 0 using COALESCE.",
+      "The query executes successfully against the seeded SQLite database I embedded in the backend."
     ],
     "code": "SELECT \n    u.name, \n    COALESCE(SUM(o.amount), 0) as total_amount\nFROM users u\nLEFT JOIN orders o ON u.id = o.user_id\nGROUP BY u.id, u.name;",
     "endpoint": "/api/sql1",
@@ -135,11 +135,11 @@
   {
     "id": "q5",
     "title": "Question: SQL Optimization / Indexing",
-    "description": "Suppose you have a table with millions of rows (`transactions`). Write a query to get the last 10 transactions of a given user (user_id = 123), and suggest one index that would improve query performance.",
+    "description": "Suppose you have a table with millions of rows (`transactions`). Write a query to get the last 10 transactions of a given user (user_id = 123), and suggest one index that would improve query performance. I built an interactive EXPLAIN QUERY PLAN tool to demonstrate the optimization.",
     "expected_behaviors": [
-      "The query should correctly return the last 10 transactions for user_id = 123 ordered by created_at DESC.",
-      "The index suggestion should optimize the query (e.g., CREATE INDEX idx_user_created ON transactions(user_id, created_at)).",
-      "The Explain Query tool should show 'USING INDEX' instead of 'SCAN TABLE' after the index is applied."
+      "My query correctly returns the last 10 transactions for user_id = 123 ordered by created_at DESC.",
+      "My index suggestion optimizes the query (CREATE INDEX idx_user_created ON transactions(user_id, created_at)).",
+      "My Explain Query tool proves the optimization by switching from 'SCAN TABLE' to 'USING INDEX' after the index is applied."
     ],
     "code": "-- Query:\nSELECT * FROM transactions \nWHERE user_id = 123 \nORDER BY created_at DESC \nLIMIT 10;\n\n-- Recommended Index:\nCREATE INDEX idx_user_created ON transactions(user_id, created_at);",
     "endpoint": "/api/sql2",
@@ -150,13 +150,13 @@
   {
     "id": "q6",
     "title": "Question: Code Review 2 - HTTP Handler",
-    "description": "Given a poorly structured Go code, suggest ways to refactor and improve the code. We've built an interactive playground for you to test both the original (bad) implementation and our fixed (good) implementation.",
+    "description": "Given a poorly structured Go code, suggest ways to refactor and improve the code. I have built an interactive playground to demonstrate the flaws in the original (bad) implementation and my proposed fixes in the (good) implementation.",
     "expected_behaviors": [
-      "The 'Bad' API should exhibit a race condition under load.",
-      "The 'Bad' API will allow infinite payload sizes (DoS vulnerability).",
-      "The 'Bad' API will return raw user input (XSS vulnerability).",
-      "The 'Good' API correctly restricts payload size, handles errors, and runs concurrently without data corruption.",
-      "A complete written analysis should be available outlining all problems and improvements."
+      "The 'Bad' API exhibits a race condition under load.",
+      "The 'Bad' API allows infinite payload sizes (DoS vulnerability).",
+      "The 'Bad' API returns raw user input (XSS vulnerability).",
+      "My 'Good' API correctly restricts payload size, handles errors, and runs concurrently without data corruption.",
+      "A complete written analysis is provided outlining all problems and my improvements."
     ],
     "code": "// --- BAD IMPLEMENTATION ---\npackage main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\n)\n\nvar result string\n\nfunc handler(w http.ResponseWriter, r *http.Request) {\n\tbody, _ := ioutil.ReadAll(r.Body)\n\tresult = string(body)\n\tfmt.Fprintf(w, \"Saved: %s\", result)\n\tdefer r.Body.Close()\n}\n\nfunc main() {\n\thttp.HandleFunc(\"/\", handler)\n\thttp.ListenAndServe(\":8080\", nil)\n}",
     "endpoint": "/api/codereview2",

@@ -112,6 +112,16 @@ export default function SqlOptimizationCard({ solution }: { solution: Solution }
         <p style={{ margin: '0.5rem 0 0 0' }}>{solution.description}</p>
       </div>
 
+      {/* Testing Guide / Instructions */}
+      <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#e0f2fe', borderRadius: '4px', borderLeft: '4px solid #0ea5e9' }}>
+        <h4 style={{ margin: '0 0 0.5rem 0', color: '#0369a1' }}>Testing Guide</h4>
+        <ol style={{ margin: 0, paddingLeft: '1.5rem', color: '#0c4a6e', fontSize: '0.95rem', lineHeight: '1.6' }}>
+          <li>Go to <strong>Tab 2 (Explain Query Plan)</strong> first and click "Analyze". You will see it performs a slow <code style={{ backgroundColor: '#bae6fd', padding: '2px 4px', borderRadius: '3px' }}>SCAN TABLE</code> (Full Table Scan).</li>
+          <li>Go to <strong>Tab 3 (Apply Optimization Index)</strong> and execute the proposed <code>CREATE INDEX</code> statement.</li>
+          <li>Go back to <strong>Tab 2 (Explain Query Plan)</strong> and analyze it again. You will see the index successfully upgraded the plan to a highly efficient <code style={{ backgroundColor: '#bae6fd', padding: '2px 4px', borderRadius: '3px' }}>SEARCH TABLE ... USING INDEX</code>.</li>
+        </ol>
+      </div>
+
       {/* Database Schema Visualizer */}
       <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
         <h4 style={{ margin: '0 0 0.5rem 0' }}>Database Schema</h4>
