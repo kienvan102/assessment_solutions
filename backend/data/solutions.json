@@ -1,7 +1,7 @@
 [
   {
     "id": "q1",
-    "title": "Question : Idempotent Payment System",
+    "title": "Question: Idempotent Payment System",
     "description": "Build a small service in Go that simulates a payment system with an idempotent POST /pay endpoint.",
     "expected_behaviors": [
       "When a valid payment request is sent for a new transaction ID, it should return a transaction with status 'pending'.",
@@ -43,7 +43,7 @@
   },
   {
     "id": "q2",
-    "title": "Question 2: Worker Pool Task Processor",
+    "title": "Question: Worker Pool Task Processor",
     "description": "Implement a worker pool that processes 100 tasks (squaring numbers) using only 5 concurrent workers, returning results in order.",
     "expected_behaviors": [
       "Given 100 tasks and 5 workers, all tasks should be processed concurrently with max 5 workers running at once.",

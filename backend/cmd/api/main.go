@@ -1,16 +1,24 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"sghassessment/internal/app"
+	"sghassessment/pkg/logger"
 )
 
 func main() {
-	application := app.New()
+	// Initialize logger
+	env := os.Getenv("ENV")
+	if env == "" {
+		env = "development"
+	}
+	log := logger.NewZerologAdapter(env)
+
+	log.Info().Str("env", env).Msg("Starting application")
+
+	application := app.New(log)
 	if err := application.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Server failed: %v\n", err)
-		os.Exit(1)
+		log.Fatal().Err(err).Msg("Server failed to start")
 	}
 }
