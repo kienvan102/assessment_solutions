@@ -131,5 +131,20 @@
       }
     ],
     "sample_payload": "{\n  \"query\": \"SELECT * FROM users;\"\n}"
+  },
+  {
+    "id": "q5",
+    "title": "Question: SQL Optimization / Indexing",
+    "description": "Suppose you have a table with millions of rows (`transactions`). Write a query to get the last 10 transactions of a given user (user_id = 123), and suggest one index that would improve query performance.",
+    "expected_behaviors": [
+      "The query should correctly return the last 10 transactions for user_id = 123 ordered by created_at DESC.",
+      "The index suggestion should optimize the query (e.g., CREATE INDEX idx_user_created ON transactions(user_id, created_at)).",
+      "The Explain Query tool should show 'USING INDEX' instead of 'SCAN TABLE' after the index is applied."
+    ],
+    "code": "-- Query:\nSELECT * FROM transactions \nWHERE user_id = 123 \nORDER BY created_at DESC \nLIMIT 10;\n\n-- Recommended Index:\nCREATE INDEX idx_user_created ON transactions(user_id, created_at);",
+    "endpoint": "/api/sql2",
+    "method": "POST",
+    "input_fields": [],
+    "sample_payload": "{\n  \"action\": \"query\",\n  \"query\": \"SELECT * FROM transactions WHERE user_id = 123 LIMIT 10;\"\n}"
   }
 ]

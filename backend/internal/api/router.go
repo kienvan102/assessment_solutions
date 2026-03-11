@@ -12,6 +12,7 @@ func SetupRouter(
 	workerPoolHandler *WorkerPoolHandler,
 	codeReview1Handler *CodeReview1Handler,
 	sql1Handler *Sql1Handler,
+	sql2Handler *Sql2Handler,
 ) *http.ServeMux {
 	mux := http.NewServeMux()
 
@@ -25,6 +26,7 @@ func SetupRouter(
 	mux.Handle("/api/workerpool", workerPoolHandler)
 	mux.Handle("/api/codereview1", codeReview1Handler)
 	mux.Handle("/api/sql1", sql1Handler)
+	mux.Handle("/api/sql2", sql2Handler)
 
 	return mux
 }
